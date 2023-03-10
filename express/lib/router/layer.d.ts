@@ -1,7 +1,7 @@
 import { Handler } from "type";
 declare class Layer {
     path: string;
-    handler: Handler;
+    handlers: Handler[];
     regexp: RegExp;
     keys: {
         name: string;
@@ -9,7 +9,8 @@ declare class Layer {
     params: {
         [key: string]: string;
     };
-    constructor(path: any, handler: any);
+    constructor(path: string, handlers: Handler[]);
     match(pathname: any): boolean;
+    run(req: any, res: any, next: any): Promise<void>;
 }
 export default Layer;

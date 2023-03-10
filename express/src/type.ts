@@ -13,10 +13,14 @@ export interface Route {
 interface Req {}
 interface Res {}
 
-export type Handler = (req: Req, res: Res) => Promise<void> | void;
+export type Handler = (
+  req: Req,
+  res: Res,
+  next: Handler
+) => Promise<void> | void;
 
 export type WithRoutes<T> = T & {
-  [K in typeof methods[number]]: Handler;
+  [K in typeof methods[number]]: (path, ...Handler) => void;
 };
 
 export type AppIns = WithRoutes<App>;

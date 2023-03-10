@@ -3,7 +3,7 @@ import pathRegexp from "path-to-regexp";
 
 class Layer {
   path: string;
-  handler: Handler;
+  handlers: Handler[];
   regexp: RegExp;
   keys: {
     name: string;
@@ -12,10 +12,10 @@ class Layer {
     [key: string]: string;
   } = {};
 
-  constructor(path, handler) {
+  constructor(path: string, handlers: Handler[]) {
     this.path = path;
     this.regexp = pathRegexp(path, this.keys, {});
-    this.handler = handler;
+    this.handlers = handlers;
   }
 
   match(pathname) {
@@ -28,6 +28,17 @@ class Layer {
       return true;
     }
     return false;
+  }
+
+  async run(req, res, next) {
+    await this.handlers.reduceRight<() => Promise<void>>(
+      (a, b) => {
+        return async () => {
+          await Promise.resolve(b(req, res, a));
+        };
+      },
+      () => Promise.resolve(next())
+    )();
   }
 }
 

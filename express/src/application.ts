@@ -16,8 +16,8 @@ class App {
 }
 
 methods.forEach((method) => {
-  App.prototype[method] = function (path, handler) {
-    this._router[method](path, handler);
+  App.prototype[method] = function (path, ...handlers) {
+    this._router[method](path, ...handlers);
   };
 });
 

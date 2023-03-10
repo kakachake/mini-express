@@ -203,14 +203,14 @@ function pathtoRegexp(path, keys, options) {
 
 class Layer {
     path;
-    handler;
+    handlers;
     regexp;
     keys = [];
     params = {};
-    constructor(path, handler) {
+    constructor(path, handlers) {
         this.path = path;
         this.regexp = pathToRegexp(path, this.keys, {});
-        this.handler = handler;
+        this.handlers = handlers;
     }
     match(pathname) {
         const match = this.regexp.exec(pathname);
@@ -222,6 +222,13 @@ class Layer {
             return true;
         }
         return false;
+    }
+    async run(req, res, next) {
+        await this.handlers.reduceRight((a, b) => {
+            return async () => {
+                await Promise.resolve(b(req, res, a));
+            };
+        }, () => Promise.resolve(next()))();
     }
 }
 
@@ -246,22 +253,54 @@ class Router {
          */
         const { pathname } = url.parse(req.url);
         const method = req.method?.toLocaleLowerCase();
-        const route = this.stack.find((layer) => {
+        // const layer = this.stack.find((layer) => {
+        //   const match = layer.match(pathname);
+        //   if (match) {
+        //     req.params = { ...(req.params || {}), ...layer.params };
+        //   }
+        //   return match && layer.method === method;
+        // });
+        // console.log(layer);
+        // 实现2
+        const next = (index = 0) => {
+            if (index >= this.stack.length) {
+                return res.end(`can not ${method} ${pathname}`);
+            }
+            const layer = this.stack[index];
             const match = layer.match(pathname);
             if (match) {
-                req.params = layer.params;
+                req.params = { ...(req.params || {}), ...layer.params };
             }
-            return match && layer.method === method;
-        });
-        if (route) {
-            return route.handler(req, res);
-        }
-        res.end("404 not found");
+            if (match && layer.method === method) {
+                layer.run(req, res, next.bind(null, index + 1));
+            }
+            else {
+                next(index + 1);
+            }
+        };
+        next(0);
+        // 实现1
+        // this.stack.reduceRight(
+        //   (a, b) => {
+        //     return async () => {
+        //       const match = b.match(pathname);
+        //       if (match && b.method === method) {
+        //         req.params = { ...(req.params || {}), ...b.params };
+        //         await b.run(req, res, a);
+        //       }
+        //     };
+        //   },
+        //   () => Promise.resolve()
+        // )();
+        // if (layer) {
+        //   return layer.run(req, res);
+        // }
+        // res.end("404 not found");
     }
 }
 methods.forEach((method) => {
-    Router.prototype[method] = function (path, handler) {
-        const layer = new Layer(path, handler);
+    Router.prototype[method] = function (path, ...handlers) {
+        const layer = new Layer(path, handlers);
         layer.method = method;
         this.stack.push(layer);
     };
@@ -277,8 +316,8 @@ class App {
     }
 }
 methods.forEach((method) => {
-    App.prototype[method] = function (path, handler) {
-        this._router[method](path, handler);
+    App.prototype[method] = function (path, ...handlers) {
+        this._router[method](path, ...handlers);
     };
 });
 
