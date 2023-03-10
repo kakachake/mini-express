@@ -1,3 +1,4 @@
+import methods from "methods";
 import { Route } from "type";
 import url from "url";
 class Router {
@@ -21,5 +22,15 @@ class Router {
     res.end("404 not found");
   }
 }
+
+methods.forEach((method) => {
+  Router.prototype[method] = function (path, handler) {
+    this.stack.push({
+      path,
+      method,
+      handler,
+    });
+  };
+});
 
 export default Router;

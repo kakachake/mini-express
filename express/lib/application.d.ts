@@ -1,6 +1,6 @@
+import { RouterIns } from "type";
 declare class App {
-    #private;
-    get(path: string, handler: Function): void;
+    _router: RouterIns;
     listen(...args: any[]): void;
 }
 export default App;

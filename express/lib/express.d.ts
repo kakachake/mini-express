@@ -1,3 +1,3 @@
-import App from "./application";
-declare function createApplication(): App;
+import { AppIns } from "type";
+declare function createApplication(): AppIns;
 export default createApplication;

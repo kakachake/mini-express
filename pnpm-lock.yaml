@@ -1,14 +1,24 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@types/methods': ^1.1.1
   express: ^4.18.2
+  methods: ^1.1.2
   nodemon: ^2.0.21
 
+dependencies:
+  methods: 1.1.2
+
 devDependencies:
+  '@types/methods': 1.1.1
   express: 4.18.2
   nodemon: 2.0.21
 
 packages:
+
+  /@types/methods/1.1.1:
+    resolution: {integrity: sha512-hvD1Yz0xugpvbFNVihc0Eu60Y/o1dD8LmSdN4d5QHV315ljuVGlwS5DYrb3RqFi6JskDC0Xi6/Bv6aEe/1A9bw==}
+    dev: true
 
   /abbrev/1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
@@ -362,7 +372,6 @@ packages:
   /methods/1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
     engines: {node: '>= 0.6'}
-    dev: true
 
   /mime-db/1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
