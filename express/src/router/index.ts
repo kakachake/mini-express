@@ -1,20 +1,37 @@
 import methods from "methods";
-import { Route } from "type";
+import { LayerWithMethod, Route } from "type";
 import url from "url";
+import pathRegexp from "path-to-regexp";
+import Layer from "./layer";
+
 class Router {
-  stack: Route[] = [];
-  get(path, handler) {
-    this.stack.push({
-      path,
-      method: "get",
-      handler,
-    });
-  }
+  stack: LayerWithMethod[] = [];
+
   handle(req, res) {
+    /**
+     * Url {
+        protocol: null,
+        slashes: null,
+        auth: null,
+        host: null,
+        port: null,
+        hostname: null,
+        hash: null,
+        search: '?a=1&b=123',
+        query: 'a=1&b=123',
+        pathname: '/about',
+        path: '/about?a=1&b=123',
+        href: '/about?a=1&b=123'
+      }
+     */
     const { pathname } = url.parse(req.url!);
     const method = req.method?.toLocaleLowerCase();
-    const route = this.stack.find((route) => {
-      return route.method === method && route.path === pathname;
+    const route = this.stack.find((layer) => {
+      const match = layer.match(pathname);
+      if (match) {
+        req.params = layer.params;
+      }
+      return match && layer.method === method;
     });
     if (route) {
       return route.handler(req, res);
@@ -25,11 +42,9 @@ class Router {
 
 methods.forEach((method) => {
   Router.prototype[method] = function (path, handler) {
-    this.stack.push({
-      path,
-      method,
-      handler,
-    });
+    const layer = <LayerWithMethod>new Layer(path, handler);
+    layer.method = method;
+    this.stack.push(layer);
   };
 });
 

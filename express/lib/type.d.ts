@@ -1,10 +1,12 @@
 import App from "application";
 import methods from "methods";
 import Router from "router";
+import Layer from "router/layer";
 export interface Route {
     path: string;
     method: string;
     handler: Handler;
+    layer: Layer;
 }
 interface Req {
 }
@@ -16,4 +18,7 @@ export type WithRoutes<T> = T & {
 };
 export type AppIns = WithRoutes<App>;
 export type RouterIns = WithRoutes<Router>;
+export type LayerWithMethod = Layer & {
+    method: string;
+};
 export {};

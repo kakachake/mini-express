@@ -5,7 +5,9 @@ specifiers:
   '@rollup/plugin-node-resolve': ^15.0.1
   '@rollup/plugin-typescript': ^11.0.0
   '@types/node': ^18.15.0
+  '@types/path-to-regexp': ^1.7.0
   methods: ^1.1.2
+  path-to-regexp: ^0.1.7
   rollup: ^3.19.0
   ts-node: ^10.9.1
   tslib: ^2.5.0
@@ -14,11 +16,13 @@ specifiers:
 dependencies:
   '@rollup/plugin-commonjs': 24.0.1_rollup@3.19.0
   methods: 1.1.2
+  path-to-regexp: 0.1.7
 
 devDependencies:
   '@rollup/plugin-node-resolve': 15.0.1_rollup@3.19.0
   '@rollup/plugin-typescript': 11.0.0_bpt52vougmcgyucwkocawwaw4i
   '@types/node': 18.15.0
+  '@types/path-to-regexp': 1.7.0
   rollup: 3.19.0
   ts-node: 10.9.1_lwgqdwokjtwlohdqtbb6s252kq
   tslib: 2.5.0
@@ -139,6 +143,13 @@ packages:
 
   /@types/node/18.15.0:
     resolution: {integrity: sha512-z6nr0TTEOBGkzLGmbypWOGnpSpSIBorEhC4L+4HeQ2iezKCi4f77kyslRwvHeNitymGQ+oFyIWGP96l/DPSV9w==}
+    dev: true
+
+  /@types/path-to-regexp/1.7.0:
+    resolution: {integrity: sha512-ruXmJ/6LwB5L3mxUG2z3Ovi85vH9IVubXq+S9RArvMbjhbCnSLpXs0LrHQg3f0y2tKvXhWUNv7iQDySDfHSTDw==}
+    deprecated: This is a stub types definition for path-to-regexp (https://github.com/pillarjs/path-to-regexp). path-to-regexp provides its own type definitions, so you don't need @types/path-to-regexp installed!
+    dependencies:
+      path-to-regexp: 0.1.7
     dev: true
 
   /@types/resolve/1.20.2:
@@ -295,6 +306,9 @@ packages:
   /path-parse/1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
     dev: true
+
+  /path-to-regexp/0.1.7:
+    resolution: {integrity: sha512-5DFkuoqlv1uYQKxy8omFBeJPQcdoE07Kv2sferDCrAq1ohOU+MSDswDIbnx3YAM60qIOnYa53wBhXW0EbMonrQ==}
 
   /picomatch/2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}

@@ -9,6 +9,19 @@ app.get("/about", (req, res) => {
   res.end("get /about");
 });
 
+app.get("/ab?cd", (req, res) => {
+  res.end("get /ab?cd");
+});
+
+app.get("/ab*cd", (req, res) => {
+  res.end("get /ab*cd");
+});
+
+app.get("/users/:userId/books/:bookId", (req, res) => {
+  console.log(req.params);
+  res.end(JSON.stringify(req.params));
+});
+
 app.post("/about", (req, res) => {
   res.end("post /about");
 });
@@ -21,6 +34,6 @@ app.delete("/about", (req, res) => {
   res.end("delete /about");
 });
 
-app.listen(3030, () => {
-  console.log("Listening on port %d", 3030);
+app.listen(3300, () => {
+  console.log("Listening on port %d", 3300);
 });
