@@ -1,0 +1,20 @@
+{
+  "name": "sourceCode",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --watch ./express --watch app.js --exec node app.js -e js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^2.0.21"
+  },
+  "dependencies": {
+    "my_express": "^1.0.0"
+  }
+}
