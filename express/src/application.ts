@@ -1,6 +1,6 @@
 import http from "http";
 
-import Router from "router";
+import Router from "./router";
 import methods from "methods";
 import { Handler, RouterIns } from "type";
 
@@ -13,6 +13,14 @@ class App {
     });
     server.listen(...args);
   }
+
+  use(path, ...handlers: Handler[]) {
+    if (typeof path === "function") {
+      handlers.unshift(path);
+      path = "/";
+    }
+    this._router.use(path, handlers);
+  }
 }
 
 methods.forEach((method) => {
@@ -20,5 +28,7 @@ methods.forEach((method) => {
     this._router[method](path, ...handlers);
   };
 });
+
+export { Router };
 
 export default App;

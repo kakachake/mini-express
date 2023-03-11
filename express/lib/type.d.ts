@@ -1,6 +1,6 @@
 import App from "application";
 import methods from "methods";
-import Router from "router";
+import Router from "router/index";
 import Layer from "router/layer";
 export interface Route {
     path: string;

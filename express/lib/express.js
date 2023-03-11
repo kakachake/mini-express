@@ -203,14 +203,15 @@ function pathtoRegexp(path, keys, options) {
 
 class Layer {
     path;
-    handlers;
+    handler;
     regexp;
     keys = [];
     params = {};
-    constructor(path, handlers) {
+    isUseMiddleware = false;
+    constructor(path, handler) {
         this.path = path;
         this.regexp = pathToRegexp(path, this.keys, {});
-        this.handlers = handlers;
+        this.handler = handler;
     }
     match(pathname) {
         const match = this.regexp.exec(pathname);
@@ -221,20 +222,61 @@ class Layer {
             }, this.params);
             return true;
         }
+        // 匹配use中间件的路径
+        if (this.isUseMiddleware) {
+            if (this.path === "/") {
+                return true;
+            }
+            if (pathname.startsWith(this.path + "/")) {
+                return true;
+            }
+        }
         return false;
-    }
-    async run(req, res, next) {
-        await this.handlers.reduceRight((a, b) => {
-            return async () => {
-                await Promise.resolve(b(req, res, a));
-            };
-        }, () => Promise.resolve(next()))();
     }
 }
 
+class Route {
+    stack = [];
+    constructor() { }
+    // 遍历执行当前路由对象中所有的处理函数
+    async dispatch(req, res, out) {
+        // 遍历内层的 stcak
+        const { pathname } = url.parse(req.url);
+        const method = req.method?.toLocaleLowerCase();
+        // 实现2
+        const next = async (index = 0) => {
+            if (index >= this.stack.length) {
+                // 内层处理结束，回到外层
+                return out();
+            }
+            const layer = this.stack[index];
+            const match = layer.match(pathname || "");
+            if (match) {
+                req.params = { ...(req.params || {}), ...layer.params };
+            }
+            if (match && layer.method === method) {
+                await Promise.resolve(layer.handler(req, res, next.bind(null, index + 1)));
+            }
+            else {
+                await Promise.resolve(next(index + 1));
+            }
+        };
+        await next(0);
+    }
+}
+methods.forEach((method) => {
+    Route.prototype[method] = function (path, handlers) {
+        handlers.forEach((handler) => {
+            const layer = new Layer(path, handler);
+            layer.method = method;
+            this.stack.push(layer);
+        });
+    };
+});
+
 class Router {
     stack = [];
-    handle(req, res) {
+    async handle(req, res) {
         /**
          * Url {
             protocol: null,
@@ -251,34 +293,30 @@ class Router {
             href: '/about?a=1&b=123'
           }
          */
+        console.log(this.stack);
         const { pathname } = url.parse(req.url);
         const method = req.method?.toLocaleLowerCase();
-        // const layer = this.stack.find((layer) => {
-        //   const match = layer.match(pathname);
-        //   if (match) {
-        //     req.params = { ...(req.params || {}), ...layer.params };
-        //   }
-        //   return match && layer.method === method;
-        // });
-        // console.log(layer);
         // 实现2
-        const next = (index = 0) => {
+        const next = async (index = 0) => {
             if (index >= this.stack.length) {
-                return res.end(`can not ${method} ${pathname}`);
+                return !res.finished && res.end(`can not ${method} ${pathname}`);
             }
             const layer = this.stack[index];
-            const match = layer.match(pathname);
+            const match = layer.match(pathname || "");
             if (match) {
+                req.match = true;
                 req.params = { ...(req.params || {}), ...layer.params };
             }
-            if (match && layer.method === method) {
-                layer.run(req, res, next.bind(null, index + 1));
+            if (match) {
+                await Promise.resolve(
+                // 顶层调用的就是 route 的 dispatch函数
+                layer.handler(req, res, next.bind(null, index + 1)));
             }
             else {
-                next(index + 1);
+                await Promise.resolve(next(index + 1));
             }
         };
-        next(0);
+        await next(0);
         // 实现1
         // this.stack.reduceRight(
         //   (a, b) => {
@@ -297,11 +335,20 @@ class Router {
         // }
         // res.end("404 not found");
     }
+    use(path, handlers) {
+        handlers.forEach((handler) => {
+            const layer = new Layer(path, handler);
+            layer.isUseMiddleware = true;
+            this.stack.push(layer);
+        });
+    }
 }
 methods.forEach((method) => {
     Router.prototype[method] = function (path, ...handlers) {
-        const layer = new Layer(path, handlers);
+        const route = new Route();
+        const layer = new Layer(path, route.dispatch.bind(route));
         layer.method = method;
+        route[method](path, handlers);
         this.stack.push(layer);
     };
 });
@@ -313,6 +360,13 @@ class App {
             this._router.handle(req, res);
         });
         server.listen(...args);
+    }
+    use(path, ...handlers) {
+        if (typeof path === "function") {
+            handlers.unshift(path);
+            path = "/";
+        }
+        this._router.use(path, handlers);
     }
 }
 methods.forEach((method) => {

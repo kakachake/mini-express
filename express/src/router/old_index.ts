@@ -1,13 +1,13 @@
 import methods from "methods";
-import { Handler, LayerWithMethod, RouterIns, WithRoutes } from "type";
+import { Handler, LayerWithMethod } from "type";
 import url from "url";
-import Layer from "./layer";
-import Route from "./route";
+// const Route = require("./route");
+import Layer from "./old_layer";
 
 class Router {
-  stack: (LayerWithMethod | Layer)[] = [];
+  stack: LayerWithMethod[] = [];
 
-  async handle(req, res) {
+  handle(req, res) {
     /**
      * Url {
         protocol: null,
@@ -24,33 +24,36 @@ class Router {
         href: '/about?a=1&b=123'
       }
      */
-    console.log(this.stack);
-
     const { pathname } = url.parse(req.url!);
     const method = req.method?.toLocaleLowerCase();
+    // const layer = this.stack.find((layer) => {
+    //   const match = layer.match(pathname);
+    //   if (match) {
+    //     req.params = { ...(req.params || {}), ...layer.params };
+    //   }
+    //   return match && layer.method === method;
+    // });
+    // console.log(layer);
+
     // 实现2
-    const next = async (index = 0) => {
+
+    const next = (index = 0) => {
       if (index >= this.stack.length) {
-        return !res.finished && res.end(`can not ${method} ${pathname}`);
+        return res.end(`can not ${method} ${pathname}`);
       }
       const layer = this.stack[index];
-      const match = layer.match(pathname || "");
+      const match = layer.match(pathname);
 
       if (match) {
-        req.match = true;
         req.params = { ...(req.params || {}), ...layer.params };
       }
-
-      if (match) {
-        await Promise.resolve(
-          // 顶层调用的就是 route 的 dispatch函数
-          layer.handler(req, res, next.bind(null, index + 1))
-        );
+      if (match && layer.method === method) {
+        layer.run(req, res, next.bind(null, index + 1));
       } else {
-        await Promise.resolve(next(index + 1));
+        next(index + 1);
       }
     };
-    await next(0);
+    next(0);
 
     // 实现1
     // this.stack.reduceRight(
@@ -71,25 +74,12 @@ class Router {
     // }
     // res.end("404 not found");
   }
-
-  use(path, handlers: Handler[]) {
-    handlers.forEach((handler) => {
-      const layer = new Layer(path, handler);
-      layer.isUseMiddleware = true;
-      this.stack.push(layer);
-    });
-  }
 }
 
 methods.forEach((method) => {
   Router.prototype[method] = function (path, ...handlers: Handler[]) {
-    const route = new Route();
-    const layer = new Layer(
-      path,
-      route.dispatch.bind(route)
-    ) as LayerWithMethod;
+    const layer = <LayerWithMethod>new Layer(path, handlers);
     layer.method = method;
-    route[method](path, handlers);
     this.stack.push(layer);
   };
 });

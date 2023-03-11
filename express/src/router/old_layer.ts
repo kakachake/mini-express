@@ -3,7 +3,7 @@ import pathRegexp from "path-to-regexp";
 
 class Layer {
   path: string;
-  handler: Handler;
+  handlers: Handler[];
   regexp: RegExp;
   keys: {
     name: string;
@@ -11,15 +11,14 @@ class Layer {
   params: {
     [key: string]: string;
   } = {};
-  isUseMiddleware = false;
 
-  constructor(path: string, handler: Handler) {
+  constructor(path: string, handlers: Handler[]) {
     this.path = path;
     this.regexp = pathRegexp(path, this.keys, {});
-    this.handler = handler;
+    this.handlers = handlers;
   }
 
-  match(pathname: string) {
+  match(pathname) {
     const match = this.regexp.exec(pathname);
     if (match) {
       this.keys.reduce((opt, { name }, idx) => {
@@ -28,16 +27,18 @@ class Layer {
       }, this.params);
       return true;
     }
-    // 匹配use中间件的路径
-    if (this.isUseMiddleware) {
-      if (this.path === "/") {
-        return true;
-      }
-      if (pathname.startsWith(this.path + "/")) {
-        return true;
-      }
-    }
     return false;
+  }
+
+  async run(req, res, next) {
+    await this.handlers.reduceRight<() => Promise<void>>(
+      (a, b) => {
+        return async () => {
+          await Promise.resolve(b(req, res, a));
+        };
+      },
+      () => Promise.resolve(next())
+    )();
   }
 }
 

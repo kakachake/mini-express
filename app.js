@@ -7,45 +7,66 @@ async function wait(time) {
     }, time);
   });
 }
-app.get(
-  "/",
-  async (req, res, next) => {
-    console.log("/ 1");
-    await next();
-    console.log("/ 1 end");
-  },
-  async (req, res, next) => {
-    console.log("/ 2");
-    await wait(1000);
-    await next();
-    console.log("/ 2 end");
-  },
-  async (req, res, next) => {
-    console.log("/ 3");
+
+// app.use("/", (req, res, next) => {
+//   res.end("/");
+// });
+
+app.use(
+  "/foo",
+  (req, res, next) => {
+    console.log(1);
     next();
-    console.log("/ 3 end");
+  },
+  (req, res, next) => {
+    console.log(2);
+    next();
+  },
+  (req, res, next) => {
+    console.log(3);
+    res.end("hello");
   }
 );
 
-app.get("/", (req, res, next) => {
-  console.log("/ end");
-  res.end("/ ");
-});
+// app.get(
+//   "/",
+//   async (req, res, next) => {
+//     console.log("/ 1");
+//     await next();
+//     console.log("/ 1 end");
+//   },
+//   async (req, res, next) => {
+//     console.log("/ 2");
+//     await wait(1000);
+//     await next();
+//     console.log("/ 2 end");
+//   },
+//   async (req, res, next) => {
+//     console.log("/ 3");
+//     next();
+//     console.log("/ 3 end");
+//   }
+// );
 
-app.get("/foo", (req, res, next) => {
-  console.log("foo1");
-  next();
-});
+// app.get("/", (req, res, next) => {
+//   console.log("/ end");
+//   res.end("/ ");
+// });
 
-app.get("/foo", (req, res, next) => {
-  console.log("foo2");
-  next();
-});
+// app.get("/foo", (req, res, next) => {
+//   console.log("foo1");
+//   next();
+// });
 
-app.get("/foo", (req, res, next) => {
-  console.log("foo3");
-  res.end("get /foo ");
-});
+// app.get("/foo", (req, res, next) => {
+//   console.log("foo2");
+//   next();
+// });
+
+// app.get("/foo", (req, res, next) => {
+//   console.log("foo3");
+//   res.end("get /foo ");
+// });
 
 // app.get("/about", (req, res) => {
 //   res.end("get /about");
